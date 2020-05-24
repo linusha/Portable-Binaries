@@ -1,5 +1,7 @@
 #!/bin/bash
 
+CLEANUP=$1
+
 OUT_DIR=.pex
 rm -rf $OUT_DIR
 mkdir -p $OUT_DIR
@@ -14,10 +16,14 @@ rm -r $OUT_DIR
 LOADER_SCRIPT=\
 "#!/bin/bash
 
-tail -n+11 \$0 | tar -x
+tail -n+15 \$0 | tar -x
 
 clang -c .pex/*.ll
-clang /*.o
+clang *.o
+
+rm -r .pex *.o
+
+./a.out
 
 exit 0
 #__ARCHIVE__BELOW__
@@ -27,4 +33,6 @@ exit 0
 echo "$LOADER_SCRIPT" > program.pex
 cat prog.tar >> program.pex
 rm prog.tar
+chmod u+x program.pex
+
 
