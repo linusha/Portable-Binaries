@@ -11,6 +11,10 @@ cd $OUT_DIR
 # create IR for every c file in the given directory
 clang -emit-llvm -S ../$1/*.c
 
+# Remove line starting with "source_filename". This line is
+# only added to ll files built on arm and is not portable.
+sed -i 's/^source_filename.*$//g' *.ll
+
 # create a tar archive with the .ll files
 tar -cvf prog.tar *
 
