@@ -8,4 +8,5 @@ https://docs.google.com/presentation/d/1biVTXz3gK39o9Dwn-jxoF9ux6jUNhgwwYWMy0ohw
 	- whether to remove temporary files
 	- pass compiler options to clang
 - test portability to and from PowerPC
+- enforce same clang version on origin and target systems
 
