@@ -22,7 +22,7 @@ mkdir -p .pex
 # Find the tar archive inside the script and extract it.
 # In the option -n+XX , XX indicates the line in which
 # the tar archive starts.
-tail -n+21 \$0 | tar -x -C .pex
+tail -n+23 \$0 | tar -x -C .pex
 
 cd .pex
 
