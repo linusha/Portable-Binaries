@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# TODO
+# - input list of c files to compile
+# - don't hardcode list of ll files
+# - .* dateien in .pex ordner
+# - add option to keep .pex folder and add option to automate cleanup on start
+# - add explanatory comments to script
+# - add option to pass compiler flags to clang
+
 CLEANUP=$1
 
 OUT_DIR=.pex
