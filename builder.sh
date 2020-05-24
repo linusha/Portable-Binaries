@@ -1,35 +1,26 @@
 #!/bin/bash
 
-# TODO
-# - input list of c files to compile
-# - don't hardcode list of ll files
-# - .* dateien in .pex ordner
-# - add option to keep .pex folder and add option to automate cleanup on start
-# - add explanatory comments to script
-# - add option to pass compiler flags to clang
-
-CLEANUP=$1
-
 OUT_DIR=.pex
 rm -rf $OUT_DIR
 mkdir -p $OUT_DIR
 
 # TODO: dont hard-code input file names
-clang -emit-llvm -S hello/hello.c hello/write.c
-mv hello.ll write.ll $OUT_DIR
+cd $OUT_DIR 
+clang -emit-llvm -S ../$1/*.c
 
-tar -cvf prog.tar "$OUT_DIR"/*
-rm -r $OUT_DIR
+tar -cvf prog.tar *
 
 LOADER_SCRIPT=\
 "#!/bin/bash
 
-tail -n+15 \$0 | tar -x
+mkdir -p .pex
+tail -n+17 \$0 | tar -x -C .pex
 
-clang -c .pex/*.ll
-clang *.o
+cd .pex
+clang -c *.ll 
+clang *.o 
 
-rm -r .pex *.o
+#rm -r .pex *.o
 
 ./a.out
 
@@ -38,9 +29,9 @@ exit 0
 "
 
 # save portable executable
+cd ..
 echo "$LOADER_SCRIPT" > program.pex
-cat prog.tar >> program.pex
-rm prog.tar
-chmod u+x program.pex
+cat "$OUT_DIR"/prog.tar >> program.pex
+chmod a+x program.pex
 
-
+rm -r $OUT_DIR
