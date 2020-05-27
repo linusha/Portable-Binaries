@@ -34,7 +34,7 @@ mkdir -p .pex
 # the tar archive starts.
 #
 # TODO: check this number if you edited the loader script
-tail -n+23 \$0 | tar -x -C .pex
+tail -n+27 \$0 | tar -x -C .pex
 
 cd .pex
 
