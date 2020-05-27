@@ -1,6 +1,8 @@
 #!/bin/bash
-# takes exactly one argument which is the name of the folder 
-# inside the current dir in which the .c files are
+# Arguments:
+# - name of the folder (wihtout /,...) in which the c files are
+#
+# IMPORTANT: currently there is no support for subfolders, multiple folders,...
 
 OUT_DIR=.pex
 
@@ -23,11 +25,15 @@ tar -cvf prog.tar *
 # The script that will later be bundled with the tar archive
 LOADER_SCRIPT=\
 "#!/bin/bash
+# TODO: Add a comment that explains what this is.
+#
 mkdir -p .pex
 
-# Find the tar archive inside the script and extract it.
+# Extract the tar archive.
 # In the option -n+XX , XX indicates the line in which
 # the tar archive starts.
+#
+# TODO: check this number if you edited the loader script
 tail -n+23 \$0 | tar -x -C .pex
 
 cd .pex
@@ -41,7 +47,7 @@ clang *.o
 
 exit 0
 
-# after this the archive will be injected
+# After this line the archive is injected.
 #__ARCHIVE__BELOW__
 "
 
@@ -52,6 +58,7 @@ echo "$LOADER_SCRIPT" > program.pex
 cat "$OUT_DIR"/prog.tar >> program.pex
 
 # make loader script executable
+# TODO: Maybe make this only executable for the current user?
 chmod a+x program.pex
 
 # clean up
