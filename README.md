@@ -1,5 +1,7 @@
 https://docs.google.com/presentation/d/1biVTXz3gK39o9Dwn-jxoF9ux6jUNhgwwYWMy0ohwx8Q/edit?usp=sharing
 
+https://hackmd.io/bBzsgc8UQgaThXf8I4qtPw?both
+
 # TODOs
 
 - add command line options
