@@ -1,10 +1,23 @@
 #!/bin/bash
 # TODO: Add a comment that explains what this is.
-#
+# TODO: Add licensing comment
+
+##### ARGUMENT PARSING  #####
+
+while getopts 'Tt:' flag; do
+  case "${flag}" in
+    t) TARDIR="${OPTARG}";;
+    T) TARDIR="tar";;
+  esac
+done
+
+########## HELPERS ##########
 
 function log {
 	echo \[PEX\] $1
 }
+
+######### LOADER ############
 
 BASE_DIR=$PWD
 OUT_DIR=$(mktemp -d)
@@ -15,6 +28,16 @@ TAR_START_POSITION=$(( $( grep -na '^#__ARCHIVE__BELOW__' $0 | grep -o '^[0-9]*'
 
 # Extract the tar archive.
 tail -n+$TAR_START_POSITION $0 | tar -x -C $OUT_DIR
+
+# If -t flag was set extract tar archive to $TARDIR and exit
+if [ $TARDIR ]; then
+	log "extracting tar from $0 to $TARDIR"
+	rm -rf $TARDIR
+	mkdir -p $TARDIR
+	mv $OUT_DIR/* $TARDIR
+	log "done"
+	exit 0
+fi
 
 cd $OUT_DIR
 
