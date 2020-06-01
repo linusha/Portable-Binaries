@@ -40,6 +40,7 @@ tail -n+28 \$0 | tar -x -C .pex
 cd .pex
 
 # compile the program
+# TODO: don't save anything to disk
 clang -c *.ll 
 clang *.o 
 
