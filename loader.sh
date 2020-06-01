@@ -22,6 +22,7 @@ cd $OUT_DIR
 ARCH=$( lscpu | head -n 1 | sed 's/Architecture:[[:space:]]*//g' )
 
 # case 1: program is already compiled for the current architecture
+# TODO: Support manually inserting .o files
 if [ -d $ARCH ]; then
 	log "executing existing binary for $ARCH"
 	./$ARCH/a.out
