@@ -27,6 +27,7 @@ LOADER_SCRIPT=\
 "#!/bin/bash
 # TODO: Add a comment that explains what this is.
 #
+rm -rf .pex
 mkdir -p .pex
 
 # Extract the tar archive.
@@ -34,7 +35,7 @@ mkdir -p .pex
 # the tar archive starts.
 #
 # TODO: check this number if you edited the loader script
-tail -n+27 \$0 | tar -x -C .pex
+tail -n+28 \$0 | tar -x -C .pex
 
 cd .pex
 
