@@ -2,6 +2,10 @@
 # TODO: Add a comment that explains what this is.
 #
 
+function log {
+	echo \[PEX\] $1
+}
+
 BASE_DIR=$PWD
 OUT_DIR=$(mktemp -d)
 
@@ -16,32 +20,45 @@ cd $OUT_DIR
 
 # create sub directory for current architecture and change into it
 ARCH=$( lscpu | head -n 1 | sed 's/Architecture:[[:space:]]*//g' )
-rm -rf $ARCH
+
+# case 1: program is already compiled for the current architecture
+if [ -d $ARCH ]; then
+	log "executing existing binary for $ARCH"
+	./$ARCH/a.out
+	log "done"
+	exit 0	
+fi
+
+# case 2: program needs to be compiled from IR
+log "no precompiled binary for $ARCH detected"
+
 mkdir $ARCH
 cd $ARCH
 
-# compile the program
+log "compiling program from IR"
 clang -c ../*.ll 
 clang *.o 
 
-echo $OUT_DIR
-
-# execute the program
 # TODO execute program in its original context (aka in BASE_DIR)
+log "executing program"
 ./a.out
 
-# Re-build tar archive
-# 1. Create new tar archive
+log "re-building tar archive"
 cd ..
-tar -cvf prog.tar *
-# merge loader script and tar archive to portable executable
+tar -cf prog.tar *
+
+log "generating new portable executable"
 cd $BASE_DIR
-echo $TAR_START_POSITION
 head -n $(( $TAR_START_POSITION - 1)) $0 | cat > "$OUT_DIR"/new_program.pex
 cat "$OUT_DIR"/prog.tar >> "$OUT_DIR"/new_program.pex
+
+log "substituting existing portable executable"
 mv "$OUT_DIR"/new_program.pex $0
 chmod a+x $0
+
+log "Added binary for arch $ARCH to $0"
  
+log "done"
 exit 0
 
 # After this line the archive is injected.

@@ -19,7 +19,7 @@ clang -emit-llvm -S $BASE_DIR/$1/*.c
 sed -i 's/^source_filename.*$//g' *.ll
 
 # create a tar archive with the .ll files
-tar -cvf prog.tar *
+tar -cf prog.tar *
 
 # The script that will later be bundled with the tar archive
 LOADER_SCRIPT=$(cat "$BASE_DIR"/loader.sh)
