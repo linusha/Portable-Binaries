@@ -2,20 +2,33 @@
 # TODO: Add a comment that explains what this is.
 # TODO: Add licensing comment
 
-##### ARGUMENT PARSING  #####
-
-while getopts 'Tt:' flag; do
-  case "${flag}" in
-    t) TARDIR="${OPTARG}";;
-    T) TARDIR="tar";;
-  esac
-done
 
 ########## HELPERS ##########
 
 function log {
 	echo \[PEX\] $1
 }
+function print_usage {
+	echo
+	echo "Possible arguments for portable executable: "
+	echo "    -t NAME Extract tar archive to directory NAME"
+	echo "    -T Extract tar archive to directory tar"
+	echo "    -r Force recompile"
+	echo "    -h Display this help message"
+	echo
+}
+
+##### ARGUMENT PARSING  #####
+
+while getopts 't:Trh' flag; do
+  case "${flag}" in
+    t) TARDIR="${OPTARG}";;
+    T) TARDIR="tar";;
+    r) FORCE_RECOMPILE=true;;
+    h) print_usage
+       exit 1;;
+  esac
+done
 
 ######### LOADER ############
 
@@ -46,7 +59,7 @@ ARCH=$( lscpu | head -n 1 | sed 's/Architecture:[[:space:]]*//g' )
 
 # case 1: program is already compiled for the current architecture
 # TODO: Support manually inserting .o files
-if [ -d $ARCH ]; then
+if [[ -d $ARCH && ! $FORCE_RECOMPILE ]]; then
 	log "executing existing binary for $ARCH"
 	./$ARCH/a.out
 	log "done"
@@ -54,8 +67,13 @@ if [ -d $ARCH ]; then
 fi
 
 # case 2: program needs to be compiled from IR
-log "no precompiled binary for $ARCH detected"
+if [[ $FORCE_RECOMPILE ]]; then
+	log "forcing recompilation"
+else
+	log "no precompiled binary for $ARCH detected"
+fi
 
+rm -rf $ARCH
 mkdir $ARCH
 cd $ARCH
 
