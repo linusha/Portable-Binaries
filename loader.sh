@@ -1,6 +1,7 @@
 #!/bin/bash
 # TODO: Add a comment that explains what this is.
 # TODO: Add licensing comment
+# TODO: make own object files name configurable
 
 set -e
 
@@ -14,7 +15,7 @@ function print_usage {
 	echo "Possible arguments for portable executable: "
 	echo "    -t NAME Extract tar archive to directory NAME"
 	echo "    -T Extract tar archive to directory tar"
-	echo "    -r Force recompile"
+	echo "    -r Force recompile. If -u is given recompile from object files, else from IR"
 	echo "    -a NAME Add the object files in NAME to the tar archive"
 	echo "    -u NAME Use object files from NAME dir in tar archive"
 	echo "    -h Display this help message"
