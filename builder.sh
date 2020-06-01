@@ -22,36 +22,7 @@ sed -i 's/^source_filename.*$//g' *.ll
 tar -cvf prog.tar *
 
 # The script that will later be bundled with the tar archive
-LOADER_SCRIPT=\
-"#!/bin/bash
-# TODO: Add a comment that explains what this is.
-#
-
-BASE_DIR=\$PWD  # unused for now
-OUT_DIR=\$(mktemp -d)
-
-# Find the number of the line beginning with #__ARCHIVE__BELOW__ with grep.
-# Add one to account for newline.
-TAR_START_POSITION=\$(( \$( grep -na '^#__ARCHIVE__BELOW__' \$0 | grep -o '^[0-9]*' ) + 1 ))
-
-# Extract the tar archive.
-tail -n+\$TAR_START_POSITION \$0 | tar -x -C \$OUT_DIR
-
-cd \$OUT_DIR
-
-# compile the program
-# TODO: don't save anything to disk
-clang -c *.ll 
-clang *.o 
-
-# execute the program
-# TODO execute program in its original context (aka in BASE_DIR)
-./a.out
-
-exit 0
-
-# After this line the archive is injected.
-#__ARCHIVE__BELOW__"
+LOADER_SCRIPT=$(cat "$BASE_DIR"/loader.sh)
 
 cd $BASE_DIR
 
