@@ -4,14 +4,18 @@
 #
 # IMPORTANT: currently there is no support for subfolders, multiple folders,...
 
-OUT_DIR=.pex
+BASE_DIR=$PWD
+OUT_DIR=$(mktemp -d)
 
-rm -rf $OUT_DIR
-mkdir -p $OUT_DIR
 cd $OUT_DIR 
 
+echo =============
+echo $OUT_DIR
+echo $BASE_DIR
+echo ==============
+
 # create IR for every c file in the given directory
-clang -emit-llvm -S ../$1/*.c
+clang -emit-llvm -S $BASE_DIR/$1/*.c
 
 # Remove line starting with "source_filename".
 # Needed for compatibility between different clang
@@ -35,7 +39,7 @@ mkdir -p .pex
 # the tar archive starts.
 #
 # TODO: check this number if you edited the loader script
-tail -n+28 \$0 | tar -x -C .pex
+tail -n+29 \$0 | tar -x -C .pex
 
 cd .pex
 
@@ -53,7 +57,7 @@ exit 0
 #__ARCHIVE__BELOW__
 "
 
-cd ..
+cd $BASE_DIR
 
 # merge loader script and tar archive to portable executable
 echo "$LOADER_SCRIPT" > program.pex
@@ -62,6 +66,3 @@ cat "$OUT_DIR"/prog.tar >> program.pex
 # make loader script executable
 # TODO: Maybe make this only executable for the current user?
 chmod a+x program.pex
-
-# clean up
-rm -r $OUT_DIR
