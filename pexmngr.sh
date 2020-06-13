@@ -61,7 +61,6 @@ if [[ $OPERATION == "--extract" ]]; then
         ARGUMENT="tar"
     fi
     echo $ARGUMENT
-    rm -rf $ARGUMENT
     mkdir -p $ARGUMENT
     cp -r $TEMPDIR/* $ARGUMENT
     exit 0
