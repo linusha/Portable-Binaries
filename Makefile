@@ -1,10 +1,11 @@
 CFLAGS ?= -g
 CC = ./pexcc.sh
+LD = ./pexld.sh
 
-all: helloworld
+all: helloworld.pex
 
-helloworld: write.o hello.o
-	clang $(LDFLAGS) -o $@ $^
+helloworld.pex: write.o hello.o
+	$(LD) $(LDFLAGS) -o $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -13,4 +14,6 @@ helloworld: write.o hello.o
 clean:
 	rm -f *.o
 	rm -f *.ll
-	rm helloworld
+	rm -f helloworld
+	rm -f helloworld.pex
+	rm -rf tar
