@@ -29,7 +29,7 @@ while getopts 'o:' flag; do
   esac
 done
 
-##### LINKING LOGIC ####
+####### LINKING LOGIC ######
 
 TEMPDIR=$(mktemp -d)
 log "tar archive gets built in $TEMPDIR"
