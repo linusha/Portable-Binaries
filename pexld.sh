@@ -1,26 +1,25 @@
 #!/bin/bash
-# TODO: Add a comment that explains what this is.
-# TODO: Add licensing comment
-# TODO: make own object files name configurable
+# 
+# This is a wrapper around the clang linker that emits a .pex file.
+# It assumes that the given object files contain the corresponding
+# clang IR as a .pex Section in the object file.
 
 set -e
 
 ########## HELPERS ##########
 
 function log {
-	echo \[PEX\] $1
+	echo \[PEX-LD\] $1
 }
-# function print_usage {
-# 	echo
-# 	echo "Possible arguments for portable executable: "
-# 	echo "    -t NAME Extract tar archive to directory NAME"
-# 	echo "    -T Extract tar archive to directory tar"
-# 	echo "    -r Force recompile. If -u is given recompile from object files, else from IR"
-# 	echo "    -a NAME Add the object files in NAME to the tar archive"
-# 	echo "    -u NAME Use object files from NAME dir in tar archive"
-# 	echo "    -h Display this help message"
-# 	echo
-# }
+function print_usage {
+	echo
+	echo "Possible arguments for PEX Linker: "
+	echo "    -o NAME name of the output"
+	echo "    -h Display this help message"
+    # TODO: implement this
+    # echo "    all other flags are interpreted as flags for the clang linker"
+	echo
+}
 
 ##### ARGUMENT PARSING  #####
 
@@ -30,26 +29,30 @@ while getopts 'o:' flag; do
   esac
 done
 
-TEMPDIR=$(mktemp -d)
-echo $TEMPDIR
+##### LINKING LOGIC ####
 
-for i in "$@"; do
-    if [[ $i =~ ^.*\.o$ ]]; then
-        objcopy --dump-section .pex="$TEMPDIR"/"$i".ll $i
+TEMPDIR=$(mktemp -d)
+log "tar archive gets built in $TEMPDIR"
+
+# loop over all arguments to detect then ones that are .o files
+# get IR out of the .pex sections for each object file
+for arg in "$@"; do
+    if [[ $arg =~ ^.*\.o$ ]]; then
+        objcopy --dump-section .pex="$TEMPDIR"/"$arg".ll $arg
     fi
 done
 
-# create a tar archive with the .ll files
-ls $TEMPDIR
+log "creating tar archive with the .ll files"
 tar -cf "$TEMPDIR"/prog.tar -C "$TEMPDIR" .
 
 # The script that will later be bundled with the tar archive
 LOADER_SCRIPT=$(cat loader.sh)
 
-# merge loader script and tar archive to portable executable
+log "merging loader script and tar archive to portable executable"
 echo "$LOADER_SCRIPT" > $OUTPUT_FILE
 cat "$TEMPDIR"/prog.tar >> $OUTPUT_FILE
 
 # make loader script executable
 # TODO: Maybe make this only executable for the current user?
+## currently not possible, since we need to use sudo in fsoc lab
 chmod a+x $OUTPUT_FILE
