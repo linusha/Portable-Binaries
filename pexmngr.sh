@@ -78,7 +78,7 @@ if [[ $OPERATION == "--merge" ]]; then
     cd $TEMPDIR
     tar -cf prog.tar *
     cd $BASEDIR
-    head -n $(( $TAR_START_POSITION - 1)) $0 | cat > "$TEMPDIR"/new_program.pex
+    head -n $(( $TAR_START_POSITION - 1)) $PEXFILE | cat > "$TEMPDIR"/new_program.pex
     cat "$TEMPDIR"/prog.tar >> "$TEMPDIR"/new_program.pex
     mv "$TEMPDIR"/new_program.pex $PEXFILE
     chmod a+x $PEXFILE
