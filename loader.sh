@@ -59,7 +59,7 @@ if [[ $TARDIR ]]; then
 fi
 
 # determine current cpu architecture
-ARCH=$( lscpu | head -n 1 | sed 's/Architecture:[[:space:]]*//g' )
+ARCH=$(clang -dumpmachine)
 
 # If -a flag was set, add new object files
 if [[ $ADD_OBJ_DIR ]]; then

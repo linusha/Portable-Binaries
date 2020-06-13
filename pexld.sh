@@ -34,16 +34,29 @@ done
 TEMPDIR=$(mktemp -d)
 log "tar archive gets built in $TEMPDIR"
 
+# creating folder for current arch to persist object files in .pex
+ARCH=$(clang -dumpmachine)
+mkdir -p $TEMPDIR/$ARCH
+
 # loop over all arguments to detect then ones that are .o files
 # get IR out of the .pex sections for each object file
+# prepare .o files to be persisted in .pex
 for arg in "$@"; do
     if [[ $arg =~ ^.*\.o$ ]]; then
         objcopy --dump-section .pex="$TEMPDIR"/"$arg".ll $arg
+        cp "$arg" "$TEMPDIR"/"$ARCH"/"$arg"
     fi
 done
 
+# linking for current arch in future .pex
+BASEDIR=$( pwd )
+cd "$TEMPDIR"/"$ARCH"
+clang "$@" -o a.out
+
 log "creating tar archive with the .ll files"
-tar -cf "$TEMPDIR"/prog.tar -C "$TEMPDIR" .
+cd ..
+tar -cf prog.tar *
+cd $BASEDIR
 
 # The script that will later be bundled with the tar archive
 LOADER_SCRIPT=$(cat loader.sh)
