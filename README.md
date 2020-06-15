@@ -4,16 +4,6 @@
 - https://hackmd.io/bBzsgc8UQgaThXf8I4qtPw?both
 - https://www.mathcha.io/editor/xqGoS6lfvrhP8zGO7cY9wg6zs20zne2U1Qzg7x (read only)
 
-# TODOs
-
-- add command line options
-	- output file
-	- folder name (.pex/)
-	- whether to remove temporary files
-	- pass compiler options to clang
-- test portability to and from PowerPC
-- enforce same clang version on origin and target systems
-
 
 # Challenges
 
