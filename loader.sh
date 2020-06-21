@@ -25,11 +25,10 @@ tail -n+$TAR_START_POSITION $0 | tar -x -C $OUT_DIR
 # determine current cpu architecture
 ARCH=$(clang -dumpmachine)
 
-# TODO: reuse for tagging system  
-# If -u flag was set, use given folder name
-if [[ $OBJ_DIR ]]; then
-	log "using binaries in $OBJ_DIR"
-	ARCH=$OBJ_DIR
+# use first argument as "arch" name
+if [[ $1 ]]; then
+	log "using binaries in $1"
+	ARCH=$1
 fi
 
 cd $OUT_DIR
