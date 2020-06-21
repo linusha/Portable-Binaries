@@ -1,4 +1,3 @@
-CFLAGS ?= -g
 CC = ./pexcc.sh
 LD = ./pexld.sh
 
