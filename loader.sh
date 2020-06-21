@@ -50,7 +50,7 @@ else
 	clang -c ../*.ll 
 
 	log "generating executable from object files"
-	clang *.o 
+	clang $( cat ../LINKER_FLAGS ) -o a.out *.o  
 
 	# TODO execute program in its original context (aka in BASE_DIR)
 	log "executing program"

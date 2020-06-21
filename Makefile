@@ -1,5 +1,6 @@
 CC = ./pexcc.sh
 LD = ./pexld.sh
+LDFLAGS ?= -v
 
 all: helloworld.pex
 
