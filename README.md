@@ -10,6 +10,7 @@
 # Challenges
 
 - Mismatching clang versions on origin and target can cause issues. For example clang version 3.8 cannot handle the ll files that are created by clang 6.0. The reason is that clang 6.0 adds a line with the `source_filename` to the ll file.
+- Also `-g` (Compilerflag) does not work between at least those specific clang versions.
 
 
 # Sources
