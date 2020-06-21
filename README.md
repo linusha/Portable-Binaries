@@ -6,6 +6,12 @@
 - https://hackmd.io/bBzsgc8UQgaThXf8I4qtPw?both
 - https://www.mathcha.io/editor/xqGoS6lfvrhP8zGO7cY9wg6zs20zne2U1Qzg7x (read only)
 
+# Usage
+
+When a special NAME for a bundle was introduced at link time, it can be called
+(instead of the default plattform triple) with `PEXFILE NAME`.
+If NAME was not introduced at link time, recompilation is forced from IR and the
+resulting bundle is named NAME.
 
 # Challenges
 
