@@ -1,8 +1,5 @@
 CC = ./pexcc.sh
 LD = ./pexld.sh
-# CC = clang
-# LD = clang
-LDFLAGS ?= -n TEST
 
 all: helloworld.pex
 
