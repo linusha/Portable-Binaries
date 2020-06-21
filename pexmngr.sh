@@ -50,8 +50,6 @@ OPERATION=$2
 ARGUMENT=$3
 TEMPDIR=$(mktemp -d)
 
-log $TEMPDIR
-
 TAR_START_POSITION=$(( $( grep -na '^#__ARCHIVE__BELOW__' $PEXFILE | grep -o '^[0-9]*' ) + 1 ))
 tail -n+$TAR_START_POSITION $PEXFILE | tar -x -C $TEMPDIR
 
@@ -60,9 +58,9 @@ if [[ $OPERATION == "--extract" ]]; then
     if [[ -z $ARGUMENT ]]; then
         ARGUMENT="tar"
     fi
-    echo $ARGUMENT
     mkdir -p $ARGUMENT
     cp -r $TEMPDIR/* $ARGUMENT
+    log "Extracting to: $ARGUMENT"
     exit 0
 fi
 
@@ -72,7 +70,6 @@ if [[ $OPERATION == "--merge" ]]; then
         exit 1
     fi
     $0 $ARGUMENT --extract $TEMPDIR
-    echo $( ls $TEMPDIR )
     BASEDIR=$(pwd)
     cd $TEMPDIR
     tar -cf prog.tar *
@@ -95,10 +92,7 @@ if [[ $OPERATION == "--rm" ]]; then
     fi
     BASEDIR=$(pwd)
     cd $TEMPDIR
-    ls
     rm -rf $ARGUMENT
-    echo $ARGUMENT
-    ls
     tar -cf prog.tar *
     cd $BASEDIR
     head -n $(( $TAR_START_POSITION - 1)) $PEXFILE | cat > "$TEMPDIR"/new_program.pex

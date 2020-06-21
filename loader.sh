@@ -45,13 +45,13 @@ else
 	# create sub directory for current architecture and change into it
 	mkdir -p $ARCH
 	cd $ARCH
-	
+
 	# object files are not provided already
 	log "generating object files from IR"
 	
-	for file in ../**/*.ll; do
-		mkdir -p $( dirname ${file:3} ) 
-		clang -c "$file" -o "${file:3}".o 
+	for file in ../IR/**/*.ll; do
+		mkdir -p $( dirname ${file:6} ) 
+		clang -c "$file" -o "${file:6}".o 
 	done
 
 	log "generating executable from object files"
