@@ -10,10 +10,9 @@ helloworld.pex: write.o hello.o
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-.PHONY: clean
+.PHONY: clean clean-dev
 clean:
-	rm -f *.o
-	rm -f *.ll
-	rm -f helloworld
-	rm -f helloworld.pex
+	rm -f *.o *.ll helloworld helloworld.pex a.out
+
+clean-dev: clean
 	rm -rf tar
