@@ -1,6 +1,6 @@
-#include "write.h"                                                              
-#include <stdio.h>                                                              
-                                                                                 
-void write(char* str) {                                                         
-         printf(str);                                                            
-}   
+#include "writer/write.h"
+int main() {
+   write("Hello, World!\n");
+   return 0;
+}
+

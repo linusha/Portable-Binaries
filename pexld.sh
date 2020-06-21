@@ -36,14 +36,14 @@ log "tar archive gets built in $TEMPDIR"
 
 # creating folder for current arch to persist object files in .pex
 ARCH=$(clang -dumpmachine)
-mkdir -p $TEMPDIR/$ARCH
-touch $TEMPDIR/LINKER_FLAGS
 
 # loop over all arguments to detect then ones that are .o files
 # get IR out of the .pex sections for each object file
 # prepare .o files to be persisted in .pex
 for arg in "$@"; do
     if [[ $arg =~ ^.*\.o$ ]]; then
+        mkdir -p $( dirname $TEMPDIR/$ARCH/$arg )
+        mkdir -p $( dirname $TEMPDIR/$arg )
         objcopy --dump-section .pex="$TEMPDIR"/"$arg".ll $arg
         cp "$arg" "$TEMPDIR"/"$ARCH"/"$arg"
     else

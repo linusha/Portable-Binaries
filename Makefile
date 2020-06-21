@@ -1,13 +1,15 @@
 CC = ./pexcc.sh
 LD = ./pexld.sh
-LDFLAGS ?= -v
+# CC = clang
+# LD = clang
+#LDFLAGS ?= -v
 
 all: helloworld.pex
 
-helloworld.pex: write.o hello.o
+helloworld.pex: write.o writer/write.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
-%.o: %.c
+%.o: %.c writer/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 to-arm:
@@ -22,3 +24,4 @@ clean:
 
 clean-dev: clean
 	rm -rf tar
+	rm -f writer/write.o

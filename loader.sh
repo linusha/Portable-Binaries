@@ -2,6 +2,7 @@
 # TODO: Add a comment that explains what this is.
 
 set -e
+shopt -s globstar
 
 ########## HELPERS ##########
 
@@ -44,13 +45,17 @@ else
 	# create sub directory for current architecture and change into it
 	mkdir -p $ARCH
 	cd $ARCH
-
+	
 	# object files are not provided already
 	log "generating object files from IR"
-	clang -c ../*.ll 
+	
+	for file in ../**/*.ll; do
+		mkdir -p $( dirname ${file:3} ) 
+		clang -c "$file" -o "${file:3}".o 
+	done
 
 	log "generating executable from object files"
-	clang $( cat ../LINKER_FLAGS ) -o a.out *.o  
+	clang $( cat ../LINKER_FLAGS ) -o a.out **/*.o  
 
 	# TODO execute program in its original context (aka in BASE_DIR)
 	log "executing program"
