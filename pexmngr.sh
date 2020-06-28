@@ -12,7 +12,9 @@ set -e
 ########## HELPERS ##########
 
 function log {
-	echo \[PEX-MNGR\] $1
+	if [[ -n $PEX_VERBOSE ]]; then
+		echo \[PEX-MNGR\] $1
+	fi
 }
 function print_usage {
 	echo

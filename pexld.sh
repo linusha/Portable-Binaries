@@ -11,7 +11,9 @@ set -e
 ########## HELPERS ##########
 
 function log {
-	echo \[PEX-LD\] $1
+	if [[ -n $PEX_VERBOSE ]]; then
+		echo \[PEX-LD\] $1
+	fi
 }
 function print_usage {
 	echo

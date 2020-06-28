@@ -1,6 +1,7 @@
 #!/bin/bash
 # Uses env var PEX_USE_TAG to determine the bundle that should be run.
 # If the env var is not set, use architecture triple as default
+# set PEX_VERBOSE for pex logging
 
 set -e
 shopt -s globstar
@@ -8,7 +9,9 @@ shopt -s globstar
 ########## HELPERS ##########
 
 function log {
-	echo \[PEX\] $1
+	if [[ -n $PEX_VERBOSE ]]; then
+		echo \[PEX\] $1
+	fi
 }
 
 ######### LOADER ############

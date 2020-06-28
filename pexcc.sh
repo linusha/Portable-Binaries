@@ -8,7 +8,9 @@ set -e
 ########## HELPERS ##########
 
 function log {
-	echo \[PEX-CC\] $1
+	if [[ -n $PEX_VERBOSE ]]; then
+		echo \[PEX-CC\] $1
+	fi
 }
 function print_usage {
 	echo
