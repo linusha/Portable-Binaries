@@ -1,6 +1,6 @@
 #include "write.h"                                                              
 #include <stdio.h>                                                              
                                                                                  
-void write(char* str) {                                                         
+void gib_output(char* str) {                                                         
          printf(str);                                                            
 }   

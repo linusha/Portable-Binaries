@@ -1,1 +1,1 @@
-void write(char* str);
+void gib_output(char* str);

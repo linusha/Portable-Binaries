@@ -28,20 +28,14 @@ ARCH=$(clang -dumpmachine)
 
 # if the env variable PEX_USE_TAG is set, use corresponding bundle
 if [[ -n $PEX_USE_TAG ]]; then
-	log "using binaries in $PEX_USE_TAG"
+	log "pex tag is set to $PEX_USE_TAG"
 	ARCH=$PEX_USE_TAG
 fi
 
 cd $OUT_DIR
 
-# program is already compiled for the current architecture
-if [[ -e $ARCH/a.out ]]; then
-	log "executing existing binary for $ARCH"
-	./$ARCH/a.out $@
-	log "done"
-	exit 0	
 # programs needs to be compiled from IR
-else
+if [[ ! -e $ARCH/a.out ]]; then
 	# create sub directory for current architecture and change into it
 	mkdir -p $ARCH
 	cd $ARCH
@@ -57,10 +51,6 @@ else
 	log "generating executable from object files"
 	clang $( cat ../LINKER_FLAGS ) -o a.out **/*.o  
 
-	# TODO execute program in its original context (aka in BASE_DIR)
-	log "executing program"
-	./a.out $@
-
 	log "re-building tar archive"
 	cd ..
 	tar -cf prog.tar *
@@ -74,10 +64,16 @@ else
 	mv "$OUT_DIR"/new_program.pex $0
 	chmod a+x $0
 
-	log "Added binary for arch $ARCH to $0"
-	
-	log "done"
-	exit 0
+	log "Added binary for tag $ARCH to $0"
 fi
+
+# execute program in subshell, using directory and
+# name of the original call to .pex
+log "executing binary for tag $ARCH"
+( cd $BASE_DIR && exec -a $0 $OUT_DIR/$ARCH/a.out $@ )
+
+log "done"
+exit 0	
+
 # After this line the archive is injected.
 #__ARCHIVE__BELOW__
