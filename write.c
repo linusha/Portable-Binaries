@@ -5,10 +5,9 @@ int main(int argc, char** argv ) {
    char buff[FILENAME_MAX];
    getcwd( buff, FILENAME_MAX );
    printf("Current working dir: %s\n", buff);
-   printf("%i\n", argc);
-   printf("---\n");
+   printf("argc: %i\n", argc);
    for (int i=0; i < argc; i++){
-      printf("%s\n", argv[i]);
+      printf("argv[%i]: %s\n", i, argv[i]);
    }
    gib_output("Hello World\n");
    return 0;
