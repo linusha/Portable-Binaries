@@ -1,12 +1,12 @@
-CC = ./pexcc.sh
-LD = ./pexld.sh
+CC = pexcc
+LD = pexld
 
 all: helloworld.pex
 
-helloworld.pex: write.o writer/write.o
+helloworld.pex: src/write.o src/writer/write.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
-%.o: %.c writer/%.c
+%.o: src/%.c src/writer/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 to-arm:
@@ -15,10 +15,8 @@ to-arm:
 to-x86:
 	scp helloworld.pex linus.hagemann@cm1-c4n1.fsoc.hpi.uni-potsdam.de:
 
-.PHONY: clean clean-dev
+.PHONY: clean
 clean:
-	rm -f *.o *.ll helloworld helloworld.pex a.out
-
-clean-dev: clean
+	rm -f ./**/*.o ./**/*.ll helloworld.pex ./src/writer/write.o
 	rm -rf tar
-	rm -f writer/write.o
+	

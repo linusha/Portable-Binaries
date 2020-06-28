@@ -32,7 +32,7 @@ while getopts 'o:' flag; do
 done
 
 ####### LINKING LOGIC ######
-
+INSTDIR=$( dirname $( realpath $0 ) )
 TEMPDIR=$(mktemp -d)
 log "tar archive gets built in $TEMPDIR"
 
@@ -71,7 +71,7 @@ tar -cf prog.tar *
 cd $BASEDIR
 
 # The script that will later be bundled with the tar archive
-LOADER_SCRIPT=$(cat loader.sh)
+LOADER_SCRIPT=$(cat $INSTDIR/loader.sh)
 
 log "merging loader script and tar archive to portable executable"
 echo "$LOADER_SCRIPT" > $OUTPUT_FILE
