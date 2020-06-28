@@ -1,5 +1,6 @@
 #!/bin/bash
-# TODO: Add a comment that explains what this is.
+# Uses env var PEX_TAG to determine the bundle that should be run.
+# If the env var is not set, use architecture triple as default
 
 set -e
 shopt -s globstar
@@ -36,7 +37,7 @@ cd $OUT_DIR
 # program is already compiled for the current architecture
 if [[ -e $ARCH/a.out ]]; then
 	log "executing existing binary for $ARCH"
-	./$ARCH/a.out
+	./$ARCH/a.out $@
 	log "done"
 	exit 0	
 # programs needs to be compiled from IR
@@ -58,7 +59,7 @@ else
 
 	# TODO execute program in its original context (aka in BASE_DIR)
 	log "executing program"
-	./a.out
+	./a.out $@
 
 	log "re-building tar archive"
 	cd ..

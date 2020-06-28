@@ -29,7 +29,7 @@ done
 
 ###### COMPILER LOGIC ######
 
-TEMPFILE=$(tempfile)
+TEMPFILE=$(mktemp)
 
 log "Generating IR and storing it in $TEMPFILE"
 clang -emit-llvm -S "$@" -o $TEMPFILE
