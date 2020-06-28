@@ -1,4 +1,4 @@
-![License: MIT](https://img.shields.io/badge/license-MIT-green) ![Arch: x86/ARM](https://img.shields.io/badge/arch-x86%2FARM-blue) ![Dependencies: clang](https://img.shields.io/badge/dependencies-clang-red) ![lang: C/bash](https://img.shields.io/badge/lang-bash%2FC-blueviolet) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-red)
+![License: MIT](https://img.shields.io/badge/license-MIT-green) ![Arch: x86/ARM](https://img.shields.io/badge/arch-x86%2FARM-blue) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-red)
 
 # Description
 
