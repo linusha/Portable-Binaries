@@ -25,7 +25,7 @@ function print_usage {
 	echo "    --merge NAME2 adds the content of pex file NAME2 to PEX"
 	echo "    --ls list the content of PEX"
     echo "    --tree list the content of PEX with tree program"
-    echo "    --rm ARCH delete the ARCH folder from the PEX"
+    echo "    --rm [TAG] delete the TAG folder from the PEX"
     echo "    defaults to current architecture"
     echo "    --help Display this help message"
 	echo
