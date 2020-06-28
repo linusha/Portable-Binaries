@@ -1,5 +1,5 @@
 #!/bin/bash
-# Uses env var PEX_TAG to determine the bundle that should be run.
+# Uses env var PEX_USE_TAG to determine the bundle that should be run.
 # If the env var is not set, use architecture triple as default
 
 set -e
@@ -26,10 +26,10 @@ tail -n+$TAR_START_POSITION $0 | tar -x -C $OUT_DIR
 # determine current cpu architecture
 ARCH=$(clang -dumpmachine)
 
-# if the env variable PEX_TAG is set, use corresponding bundle
-if [[ -n $PEX_TAG ]]; then
-	log "using binaries in $PEX_TAG"
-	ARCH=$PEX_TAG
+# if the env variable PEX_USE_TAG is set, use corresponding bundle
+if [[ -n $PEX_USE_TAG ]]; then
+	log "using binaries in $PEX_USE_TAG"
+	ARCH=$PEX_USE_TAG
 fi
 
 cd $OUT_DIR
