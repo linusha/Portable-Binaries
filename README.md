@@ -1,4 +1,4 @@
-![License: MIT](https://img.shields.io/badge/license-MIT-green) ![Arch: x86/ARM](https://img.shields.io/badge/arch-x86%2FARM-blue) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-red)
+ ![Arch: x86/ARM](https://img.shields.io/badge/arch-x86%2FARM-blue) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-red) ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
 # Description
 
@@ -19,6 +19,16 @@ The PEX-Suite is only tested/developed for the C programming language. However, 
 
 # Basic Usage
 
+## Executing a PEX file
+
+Execute it just like any other executable (`./example.pex arg1 arg2`). The new part - move it between your favorite ARM and x86 machines and the program still works (hopefully)!
+
+**Environment Variables**
+
+If you want to run the specific tag `NAME` from a PEX file use the environment variable `PEX_USE_TAG`: `PEX_USE_TAG=NAME ./example.pex arg1 arg2`.
+
+For verbose logging from the PEX internals, set the environment variable `PEX_VERBOSE` like `PEX_VERBOSE=1 ../example.pex arg1 arg2`.
+
 ## Building a PEX file
 `pexcc` and `pexld` wrap around the `clang` compiler and linker. They can be used as drop-in replacements in your `Makefile`. Flags are passed to `clang`.
 
@@ -37,6 +47,11 @@ example.o: example.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 ```
 A small example project with a corresponding Makefile can be found in the repository.
+
+**Environment Variables**
+
+- For logging from `pexcc` and `pexld` set the environment variable `PEX_VERBOSE` like `PEX_VERBOSE=1 make`.
+- If you want to tag the .o file in the PEX as `NAME` you can do so using another environment variable like `PEX_STORE_AS=NAME make`.
 
 ## Managing PEX files
 
