@@ -25,10 +25,10 @@ tail -n+$TAR_START_POSITION $0 | tar -x -C $OUT_DIR
 # determine current cpu architecture
 ARCH=$(clang -dumpmachine)
 
-# use first argument as "arch" name
-if [[ $1 ]]; then
-	log "using binaries in $1"
-	ARCH=$1
+# if the env variable PEX_TAG is set, use corresponding bundle
+if [[ -n $PEX_TAG ]]; then
+	log "using binaries in $PEX_TAG"
+	ARCH=$PEX_TAG
 fi
 
 cd $OUT_DIR
