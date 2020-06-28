@@ -12,9 +12,7 @@ set -e
 ########## HELPERS ##########
 
 function log {
-	if [[ -n $PEX_VERBOSE ]]; then
-		echo \[PEX-MNGR\] $1
-	fi
+	echo \[PEX-MNGR\] $1
 }
 function print_usage {
 	echo
@@ -26,6 +24,7 @@ function print_usage {
 	echo "    defaults to ./tar"
 	echo "    --merge NAME2 adds the content of pex file NAME2 to PEX"
 	echo "    --ls list the content of PEX"
+    echo "    --tree list the content of PEX with tree program"
     echo "    --rm ARCH delete the ARCH folder from the PEX"
     echo "    defaults to current architecture"
     echo "    --help Display this help message"
@@ -46,14 +45,26 @@ if [[ -z $2 ]]; then
     exit 1
 fi
 
-
 PEXFILE=$1
 OPERATION=$2
 ARGUMENT=$3
-TEMPDIR=$(mktemp -d)
 
 TAR_START_POSITION=$(( $( grep -na '^#__ARCHIVE__BELOW__' $PEXFILE | grep -o '^[0-9]*' ) + 1 ))
+
+if [[ $OPERATION == "--ls" ]]; then
+    tail -n+$TAR_START_POSITION $PEXFILE | tar --list
+    exit 0
+fi
+
+TEMPDIR=$(mktemp -d)
+
 tail -n+$TAR_START_POSITION $PEXFILE | tar -x -C $TEMPDIR
+
+if [[ $OPERATION == "--tree" ]]; then
+    cd $TEMPDIR
+    tree .
+    exit 0
+fi
 
 if [[ $OPERATION == "--extract" ]]; then
     
@@ -80,11 +91,6 @@ if [[ $OPERATION == "--merge" ]]; then
     cat "$TEMPDIR"/prog.tar >> "$TEMPDIR"/new_program.pex
     mv "$TEMPDIR"/new_program.pex $PEXFILE
     chmod a+x $PEXFILE
-    exit 0
-fi
-
-if [[ $OPERATION == "--ls" ]]; then
-    ls -R $TEMPDIR
     exit 0
 fi
 
