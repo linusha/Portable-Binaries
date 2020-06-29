@@ -23,10 +23,14 @@ function print_usage {
 
 ##### ARGUMENT PARSING  #####
 
-while getopts 'o:' flag; do
-  case "${flag}" in
-    o) OUTPUT_FILE="${OPTARG}";;
-  esac
+# extract output file name
+argc=$#
+argv=("$@")
+for (( j=0; j<argc; j++ )); do
+	if [[ "${argv[j]}" == -o ]]; then
+		OUTPUT_FILE="${argv[j+1]}"
+		break
+	fi
 done
 
 ###### COMPILER LOGIC ######
