@@ -33,6 +33,11 @@ for (( j=0; j<argc; j++ )); do
 	fi
 done
 
+for last; do true; done
+if [[ -z $OUTPUT_FILE ]]; then 
+	OUTPUT_FILE=$( echo $last | grep 's/\.c/\.o/' )
+fi
+
 ###### COMPILER LOGIC ######
 
 TEMPFILE=$(mktemp)
