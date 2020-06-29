@@ -33,7 +33,10 @@ for (( j=0; j<argc; j++ )); do
 	fi
 done
 
+# hack to get the last parameter 
+# (https://stackoverflow.com/questions/1853946/getting-the-last-argument-passed-to-a-shell-script) 
 for last; do true; done
+# set default output filename to basename.o
 if [[ -z $OUTPUT_FILE ]]; then 
 	OUTPUT_FILE=$( echo $last | grep 's/\.c/\.o/' )
 fi

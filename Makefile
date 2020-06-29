@@ -17,6 +17,6 @@ to-x86:
 
 .PHONY: clean
 clean:
-	rm -f ./**/*.o ./**/*.ll helloworld.pex ./src/writer/write.o
+	rm -f ./**/*.o ./**/*.ll helloworld.pex a.out ./src/writer/write.o
 	rm -rf tar
 	

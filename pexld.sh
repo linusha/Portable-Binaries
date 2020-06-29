@@ -25,13 +25,26 @@ function print_usage {
 
 ##### ARGUMENT PARSING  #####
 
-while getopts 'o:' flag; do
-  case "${flag}" in
-    o) OUTPUT_FILE="${OPTARG}";;
-  esac
+# extract output file name
+argc=$#
+argv=("$@")
+for (( j=0; j<argc; j++ )); do
+	if [[ "${argv[j]}" == -o ]]; then
+		OUTPUT_FILE="${argv[j+1]}"
+		break
+	fi
 done
 
+# hack to get the last parameter 
+# (https://stackoverflow.com/questions/1853946/getting-the-last-argument-passed-to-a-shell-script) 
+for last; do true; done
+# set default output filename to a.out
+if [[ -z $OUTPUT_FILE ]]; then 
+	OUTPUT_FILE=a.out
+fi
+
 ####### LINKING LOGIC ######
+
 INSTDIR=$( dirname $( realpath $0 ) )
 TEMPDIR=$(mktemp -d)
 log "tar archive gets built in $TEMPDIR"
@@ -40,10 +53,11 @@ log "tar archive gets built in $TEMPDIR"
 if [[ -z $PEX_STORE_AS ]]; then
     PEX_STORE_AS=$(clang -dumpmachine)
 fi
+
 # loop over all arguments to detect then ones that are .o files
 # get IR out of the .pex sections for each object file
 # prepare .o files to be persisted in .pex
-
+touch $TEMPDIR/LINKER_FILES $TEMPDIR/LINKER_FLAGS
 for arg in "$@"; do
     if [[ $arg =~ ^.*\.o$ ]]; then
         mkdir -p $( dirname $TEMPDIR/$PEX_STORE_AS/$arg )
@@ -55,10 +69,6 @@ for arg in "$@"; do
         echo -n "$arg " >> $TEMPDIR/LINKER_FLAGS
     fi
 done
-
-# remove -n from linker flags file, since it is a pex flag
-
-sed -i "s/-n[[:space:]]\([[:alpha:]]\)*//" $TEMPDIR/LINKER_FLAGS
 
 # linking for current arch in future .pex
 BASEDIR=$( pwd )
