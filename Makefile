@@ -1,4 +1,4 @@
-CC = pexcc
+CC = ./pex.rm sh
 LD = pexld
 
 all: helloworld.pex
