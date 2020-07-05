@@ -48,26 +48,34 @@ done
 # generiere .o für jedes .c
 # objcopy IR in jede .o
 # namen bleiben gleich
-if [[ O_SET -eq 0 && C_SET -eq 1 ]]; then
-    pexcc $@
-fi
+#if [[ O_SET -eq 0 && C_SET -eq 1 ]]; then
+    #for jede datei in $@:
+    #    rufe compile_and_inject_ir auf
+#fi
 
-# Case 4
-# -c -o
-# so wie jetzt
-# ein .c in ein NAME.o
-# IR in .o injecten 
+# takes three parameters
+# arguments for compiler call 1
+# name of source file 2
+# assumes that its get called with -o flag
+function compile_and_inject_ir {
 
-if [[ O_SET -eq 1 && C_SET -eq 1 ]]; then
+    argc=$#
+    argv=("$@")
+    for (( j=0; j<argc; j++ )); do
+    	if [[ "${argv[j]}" == -o ]]; then
+    		OUTPUT_FILE="${argv[j+1]}"
+    	fi
+    done
+
     TEMPFILE=$(mktemp)
 
     log "Generating IR and storing it in $TEMPFILE"
-    clang -emit-llvm -S "$@" -o $TEMPFILE
+    # later flag wins
+    clang -emit-llvm -S $@ -o $TEMPFILE
 
     # Remove line starting with "source_filename".
     # Needed for compatibility between different clang
-    # versions. Should be subsituted with a better solution
-    # in the future.
+    # versions.
     sed -i 's/^source_filename.*$//g' $TEMPFILE
 
     log "Compiling"
@@ -76,4 +84,17 @@ if [[ O_SET -eq 1 && C_SET -eq 1 ]]; then
     # adds .pex Section in objectfile and store IR in it 
     objcopy --add-section .pex=$TEMPFILE \
         --set-section-flags .pex=noload,readonly $OUTPUT_FILE
+}
+
+#function get_clang_flags {
+
+#}
+
+# Case 4
+# -c -o
+# so wie jetzt
+# ein .c in ein NAME.o
+# IR in .o injecten 
+if [[ O_SET -eq 1 && C_SET -eq 1 ]]; then
+        compile_and_inject_ir $@
 fi
