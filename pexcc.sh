@@ -38,9 +38,8 @@ done
 for last; do true; done
 # set default output filename to basename.o
 if [[ -z $OUTPUT_FILE ]]; then 
-	OUTPUT_FILE=$( echo $last | grep 's/\.c/\.o/' )
+	OUTPUT_FILE=$( echo $last | sed 's/\.c/\.o/' )
 fi
-
 ###### COMPILER LOGIC ######
 
 TEMPFILE=$(mktemp)
