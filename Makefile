@@ -31,11 +31,12 @@ c-no-o-yes:
 	tree # test: executable expected.pex exists and is in pex format 
 	pexmngr expected.pex --tree
 
+FILE=helloworld.pex
 to-arm:
-	scp helloworld.pex tom.wollnik@odroid-n2-01.fsoc.hpi.uni-potsdam.de:
+	scp $(FILE) $(USER)@odroid-n2-01.fsoc.hpi.uni-potsdam.de:
 
 to-x86:
-	scp helloworld.pex tom.wollnik@cm1-c4n1.fsoc.hpi.uni-potsdam.de:
+	scp $(FILE) $(USER)@cm1-c4n1.fsoc.hpi.uni-potsdam.de:
 
 .PHONY: clean
 clean:
