@@ -112,14 +112,15 @@ function main {
     fi
 }
 
-
-
-# takes three parameters
-# arguments for compiler call 1
-# name of source file 2
-# assumes that its get called with -o flag
 function compile_and_inject_ir {
+    # Compiles a single .c file to an object file with IR added to .pex section 
+    # Parameters:
+    # The argument array has to contain all clang flags and the single .c File
+    # -o has to be set
+    # Return Value:
+    # none
 
+    # determine output filename from compiler arguments
     argc=$#
     argv=("$@")
     for (( j=0; j<argc; j++ )); do
@@ -128,18 +129,15 @@ function compile_and_inject_ir {
     	fi
     done
 
-    TEMPFILE=$(mktemp)
-
     log "Generating IR and storing it in $TEMPFILE"
-    # later flag wins
+    TEMPFILE=$(mktemp)
+    # overwrite original -o flag
+    # this compile step generates the IR
     clang -emit-llvm -S $@ -o $TEMPFILE
-
-    # Remove line starting with "source_filename".
-    # Needed for compatibility between different clang
-    # versions.
-    sed -i 's/^source_filename.*$//g' $TEMPFILE
+    make_compatible $TEMPFILE
 
     log "Compiling"
+    # this compile step generates the object file
     clang "$@"
 
     # adds .pex Section in objectfile and store IR in it 
@@ -148,35 +146,41 @@ function compile_and_inject_ir {
 }
 
 function log {
+    # Logging function for PEX.
+    # Activate output by setting the environment
+    # variable PEX_VERBOSE when calling pex 
+    # Parameters:
+    # 1 - string to log
+    # Return Value:
+    # none
+
 	if [[ -n $PEX_VERBOSE ]]; then
 		echo \[PEX-CC\] $1
 	fi
 }
 
-# parameters:
-# 1 - folder to pex
-# 2 - output filename
 function create_pex_from_folders {
-    # linking for current arch in future .pex
-    BASEDIR=$( pwd )
-    cd "$1"
-    log "creating tar archive with the .ll files"
-    tar -cf prog.tar *
-    cd $BASEDIR
+    # Creates a PEX File for the given directory.
+    # Parameters:
+    # 1 - folder to pack into PEX
+    # 2 - name of the PEX file
+    # Return Value:
+    # none
+
+    log "creating tar archive"
+    TARFILE=$( mktemp )
+    tar -cf $TARFILE -C $1 .
     
     # The script that will later be bundled with the tar archive
     LOADER_SCRIPT=$(cat /usr/share/pex_loader.sh)
     
-    log "merging loader script and tar archive to portable executable"
+    log "merging loader script and tar archive to PEX File"
     echo "$LOADER_SCRIPT" > $2
-    cat "$1"/prog.tar >> $2
+    cat $TARFILE >> $2
     
     # make loader script executable
-    # TODO: Maybe make this only executable for the current user?
-    ## currently not possible, since we need to use sudo in fsoc lab
     chmod a+x $2
 }
-
 
 function contains_pex_section {
     # Determines whether an object file contains a .pex section.
@@ -185,7 +189,7 @@ function contains_pex_section {
     # Return Value:
     # 1 - if there is a .pex section
     # 0 - otherwise
-    
+
     SECTION_HEADERS=$( readelf --section-headers $1 )
     PEX_SECTION=$( echo $SECTION_HEADERS | grep '\.pex' )
     if [[ -z PEX_SECTION ]]; then
@@ -193,6 +197,17 @@ function contains_pex_section {
     else
         echo 1
     fi
+}
+
+function make_compatible {
+    # Remove line starting with "source_filename" in a file.
+    # Needed for compatibility between different clang versions.
+    # Parameters:
+    # 1 - name of the file
+    # Return Value: 
+    # none
+
+    sed -i 's/^source_filename.*$//g' $1
 }
 
 # call main logic
