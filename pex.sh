@@ -6,17 +6,17 @@
 
 function main {
     
-    parse_flags_and_c_files $@
-    parse_c_and_o_flag $@
+    parse_flags_and_c_files "$@"
+    parse_c_and_o_flag "$@"
 
-    if [[ C_SET -eq 0 ]]; then
-        handle_case_c_not_set $@
+    if [[ $C_SET -eq 0 ]]; then
+        handle_case_c_not_set "$@"
 
-    elif [[ O_SET -eq 0 && C_SET -eq 1 ]]; then
-        handle_case_c_set_o_not_set $@
+    elif [[ $O_SET -eq 0 && $C_SET -eq 1 ]]; then
+        handle_case_c_set_o_not_set "$@"
 
-    elif [[ O_SET -eq 1 && C_SET -eq 1 ]]; then
-        handle_case_c_set_o_set $@
+    elif [[ $O_SET -eq 1 && $C_SET -eq 1 ]]; then
+        handle_case_c_set_o_set "$@"
     fi
 }
 
@@ -31,7 +31,7 @@ function parse_flags_and_c_files {
     FLAGS=()
     C_FILES=()
 
-    for arg in $@; do
+    for arg in "$@"; do
         if [[ $arg =~ .*\.c ]]; then
             C_FILES+=( "$arg" )
         else
@@ -77,7 +77,7 @@ function handle_case_c_not_set {
 
     # Uses ending of the last file to determine
     # whether to compile from .o files or .c files.
-    for arg in $@; do
+    for arg in "$@"; do
         if [[ $arg =~ .*\.c ]]; then
             local LASTFILE=c
         elif [[ $arg =~ .*\.o ]]; then
@@ -85,7 +85,8 @@ function handle_case_c_not_set {
         fi
     done
 
-    local TEMPDIR=$(mktemp -d)
+    local TEMPDIR
+    TEMPDIR=$( mktemp -d )
     log "tar archive gets built in $TEMPDIR"
 
     if [[ -z $PEX_STORE_AS ]]; then
@@ -95,41 +96,41 @@ function handle_case_c_not_set {
 
     if [[ $LASTFILE == c ]]; then
         # Persist linker flags in .pex to reuse them in recompilations.
-        touch $TEMPDIR/LINKER_FLAGS
-        for flag in ${FLAGS[@]}; do
-            echo -n "$flag " >> $TEMPDIR/LINKER_FLAGS
+        touch "$TEMPDIR"/LINKER_FLAGS
+        for flag in "${FLAGS[@]}"; do
+            echo -n "$flag " >> "$TEMPDIR"/LINKER_FLAGS
         done
 
         # Compile IR for each .c File to persist in .pex.
-        for file in ${C_FILES[@]}; do
-            mkdir -p $( dirname $TEMPDIR/IR/$file )
-            clang -emit-llvm -S ${FLAGS[@]} -o $TEMPDIR/IR/$file.ll $file 
+        for file in "${C_FILES[@]}"; do
+            mkdir -p "$( dirname "$TEMPDIR"/IR/"$file" )"
+            clang -emit-llvm -S "${FLAGS[@]}" -o "$TEMPDIR"/IR/"$file".ll "$file" 
         done
         
         # Compile actual executable.
-        mkdir -p $( dirname $TEMPDIR/$PEX_STORE_AS/a.out )
-        clang ${FLAGS[@]} -o $TEMPDIR/$PEX_STORE_AS/a.out ${C_FILES[@]}
+        mkdir -p "$( dirname "$TEMPDIR"/"$PEX_STORE_AS"/a.out )"
+        clang "${FLAGS[@]}" -o "$TEMPDIR"/"$PEX_STORE_AS"/a.out "${C_FILES[@]}"
 
-    elif [[ $LASTFILE == o ]]; then
+    elif [[ "$LASTFILE" == o ]]; then
         for arg in "$@"; do
             # Find all .o files in input command that contain a .pex section.
             # We assume that these are the files that are not part of any flag.
             # Persist extracted IR and .o files in .pex.
-            if [[ $arg =~ ^.*\.o$ && $( contains_pex_section $arg ) -eq 1 ]]; then
-                mkdir -p $( dirname $TEMPDIR/$PEX_STORE_AS/$arg )
-                mkdir -p $( dirname $TEMPDIR/IR/$arg )
-                objcopy --dump-section .pex="$TEMPDIR"/IR/"$arg".ll $arg
+            if [[ "$arg" =~ ^.*\.o$ && $( contains_pex_section "$arg" ) -eq 1 ]]; then
+                mkdir -p "$( dirname "$TEMPDIR"/"$PEX_STORE_AS"/"$arg" )"
+                mkdir -p "$( dirname "$TEMPDIR"/IR/"$arg" )"
+                objcopy --dump-section .pex="$TEMPDIR"/IR/"$arg".ll "$arg"
                 cp "$arg" "$TEMPDIR"/"$PEX_STORE_AS"/"$arg"
             else
                 # Everything that is not an input file is a flag.
-                echo -n "$arg " >> $TEMPDIR/LINKER_FLAGS
+                echo -n "$arg " >> "$TEMPDIR"/LINKER_FLAGS
             fi
         done
         # Compile actual executable.
-        clang $@ -o "$TEMPDIR"/"$PEX_STORE_AS"/a.out
+        clang "$@" -o "$TEMPDIR"/"$PEX_STORE_AS"/a.out
     fi
 
-    create_pex_from_folders $TEMPDIR "${OUTPUT_FILE:-a.out}"
+    create_pex_from_folders "$TEMPDIR" "${OUTPUT_FILE:-a.out}"
 }
 
 function handle_case_c_set_o_not_set {
@@ -142,8 +143,8 @@ function handle_case_c_set_o_not_set {
     # Return Value: 
     # none
 
-    for file in ${C_FILES[@]}; do
-    	    compile_and_inject_ir ${FLAGS[@]} -o $( echo "$file" | sed 's/\.c/\.o/' ) "$file"
+    for file in "${C_FILES[@]}"; do
+    	    compile_and_inject_ir "${FLAGS[@]}" -o "${file//.c/.o}" "$file"
     done
 }
 
@@ -155,7 +156,7 @@ function handle_case_c_set_o_set {
     # Return Value: 
     # none
     
-    compile_and_inject_ir $@
+    compile_and_inject_ir "$@"
 }
 
 function compile_and_inject_ir {
@@ -176,19 +177,20 @@ function compile_and_inject_ir {
     done
 
     log "Generating IR and storing it in $TEMPFILE"
-    local TEMPFILE=$(mktemp)
+    local TEMPFILE
+    TEMPFILE=$( mktemp )
     # Overwrite original -o flag.
     # This compile step generates the IR.
-    clang -emit-llvm -S $@ -o $TEMPFILE
-    make_compatible $TEMPFILE
+    clang -emit-llvm -S "$@" -o "$TEMPFILE"
+    make_compatible "$TEMPFILE"
 
     log "Compiling"
     # This compile step generates the object file.
     clang "$@"
 
     # Adds .pex Section in objectfile and store IR in it.
-    objcopy --add-section .pex=$TEMPFILE \
-        --set-section-flags .pex=noload,readonly $OUTPUT_FILE
+    objcopy --add-section .pex="$TEMPFILE" \
+        --set-section-flags .pex=noload,readonly "$OUTPUT_FILE"
 }
 
 function contains_pex_section {
@@ -199,9 +201,11 @@ function contains_pex_section {
     # 1 - if there is a .pex section
     # 0 - otherwise
 
-    local SECTION_HEADERS=$( readelf --section-headers $1 )
-    local PEX_SECTION=$( echo $SECTION_HEADERS | grep '\.pex' )
-    if [[ -z PEX_SECTION ]]; then
+    local SECTION_HEADERS
+    SECTION_HEADERS=$( readelf --section-headers "$1" )
+    local PEX_SECTION
+    PEX_SECTION=$( echo "$SECTION_HEADERS" | grep '\.pex' )
+    if [[ -z "$PEX_SECTION" ]]; then
         echo 0
     else
         echo 1
@@ -216,7 +220,7 @@ function make_compatible {
     # Return Value: 
     # none
 
-    sed -i 's/^source_filename.*$//g' $1
+    sed -i 's/^source_filename.*$//g' "$1"
 }
 
 function create_pex_from_folders {
@@ -228,18 +232,20 @@ function create_pex_from_folders {
     # none
 
     log "creating tar archive"
-    local TARFILE=$( mktemp )
-    tar -cf $TARFILE -C $1 .
+    local TARFILE
+    TARFILE=$( mktemp )
+    tar -cf "$TARFILE" -C "$1" .
     
     # The script that will later be bundled with the tar archive.
-    local LOADER_SCRIPT=$(cat /usr/share/pex_loader.sh)
+    local LOADER_SCRIPT
+    LOADER_SCRIPT=$( cat /usr/share/pex_loader.sh )
     
     log "merging loader script and tar archive to PEX File"
-    echo "$LOADER_SCRIPT" > $2
-    cat $TARFILE >> $2
+    echo "$LOADER_SCRIPT" > "$2"
+    cat "$TARFILE" >> "$2"
     
     # Make loader script executable.
-    chmod a+x $2
+    chmod a+x "$2"
 }
 
 function log {
@@ -251,10 +257,10 @@ function log {
     # Return Value:
     # none
 
-	if [[ -n $PEX_VERBOSE ]]; then
-		echo \[PEX\] $1
+	if [[ -n "$PEX_VERBOSE" ]]; then
+		echo \[PEX\] "$1"
 	fi
 }
 
 # Call main logic.
-main $@
+main "$@"
