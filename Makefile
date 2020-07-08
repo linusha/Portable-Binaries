@@ -1,5 +1,5 @@
 CC = ./pex.sh
-LD = pexld
+LD = ./pex.sh
 
 all: helloworld.pex
 
