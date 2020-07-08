@@ -7,8 +7,6 @@ set -e
 DIR=$( dirname $( realpath $0 ) )
 
 cp -sf $DIR/pex.sh $INSTDIR/pex
-cp -sf $DIR/pexcc.sh $INSTDIR/pexcc
-cp -sf $DIR/pexld.sh $INSTDIR/pexld
 cp -sf $DIR/pexmngr.sh $INSTDIR/pexmngr
 
 cp -sf $DIR/loader.sh /usr/share/pex_loader.sh
