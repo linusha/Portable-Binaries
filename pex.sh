@@ -2,31 +2,117 @@
 #
 #
 
-FLAGS=()
-FILES=()
+function main {
+    FLAGS=()
+    FILES=()
 
-for arg in $@; do
-    if [[ $arg =~ .*\.c ]]; then
-        FILES+=( "$arg" )
-    else
-        FLAGS+=( "$arg" )
+    for arg in $@; do
+        if [[ $arg =~ .*\.c ]]; then
+            FILES+=( "$arg" )
+        else
+            FLAGS+=( "$arg" )
+        fi
+    done
+
+    O_SET=0
+    C_SET=0
+
+    argc=$#
+    argv=("$@")
+    for (( j=0; j<argc; j++ )); do
+    	if [[ "${argv[j]}" == -o ]]; then
+    		OUTPUT_FILE="${argv[j+1]}"
+    		O_SET=1
+    	fi
+        if [[ "${argv[j]}" == -c ]]; then
+    		C_SET=1
+    	fi
+    done
+
+    # Case 1:
+    # kein -o kein -c
+    # chechen ob .c oder .o dateien
+    # IR für alle .c Files generieren und speichern
+    # nicht alle flags mit emit llvm -S kompatibel
+    # .c in .o kompilieren oder .o linken
+    # a.out generieren (clang call)
+    # alles in pex packen
+    if [[ C_SET -eq 0 ]]; then
+
+        # check whether we have to compile from scratch or from object files
+        for arg in $@; do
+    	    if [[ $arg =~ .*\.c ]]; then
+                LASTFILE=c
+    	    elif [[ $arg =~ .*\.o ]]; then
+                LASTFILE=o
+            fi
+        done
+
+        TEMPDIR=$(mktemp -d)
+        log "tar archive gets built in $TEMPDIR"
+        if [[ -z $PEX_STORE_AS ]]; then
+            PEX_STORE_AS=$(clang -dumpmachine)
+        fi
+
+
+        if [[ $LASTFILE == c ]]; then
+            touch $TEMPDIR/LINKER_FLAGS
+            for file in ${FILES[@]}; do
+                mkdir -p $( dirname $TEMPDIR/IR/$file )
+                clang -emit-llvm -S ${FLAGS[@]} -o $TEMPDIR/IR/$file.ll $file 
+            done
+            for flag in ${FLAGS[@]}; do
+                echo -n "$flag " >> $TEMPDIR/LINKER_FLAGS
+            done
+
+            mkdir -p $( dirname $TEMPDIR/$PEX_STORE_AS/a.out )
+            clang ${FLAGS[@]} -o $TEMPDIR/$PEX_STORE_AS/a.out ${FILES[@]}
+
+            create_pex_from_folders $TEMPDIR "${OUTPUT_FILE:-a.out}"
+
+        # we compile from object files, just as the linker always did
+        elif [[ $LASTFILE == o ]]; then
+            for arg in "$@"; do
+                # find all .o files in input command that contain a .pex section
+                # we assume that these are the files that are not part of any flag
+                if [[ $arg =~ ^.*\.o$ && $( contains_pex_section $arg ) -eq 1 ]]; then
+                    mkdir -p $( dirname $TEMPDIR/$PEX_STORE_AS/$arg )
+                    mkdir -p $( dirname $TEMPDIR/IR/$arg )
+                    objcopy --dump-section .pex="$TEMPDIR"/IR/"$arg".ll $arg
+                    cp "$arg" "$TEMPDIR"/"$PEX_STORE_AS"/"$arg"
+                else
+                    echo -n "$arg " >> $TEMPDIR/LINKER_FLAGS
+                fi
+            done
+            clang $@ -o "$TEMPDIR"/"$PEX_STORE_AS"/a.out
+            create_pex_from_folders $TEMPDIR "${OUTPUT_FILE:-a.out}"
+        fi
     fi
-done
 
-O_SET=0
-C_SET=0
+    # Case 3
+    # nur -c
+    # beliebig viele .c  
+    # generiere .o für jedes .c
+    # objcopy IR in jede .o
+    # namen bleiben gleich
+    if [[ O_SET -eq 0 && C_SET -eq 1 ]]; then
 
-argc=$#
-argv=("$@")
-for (( j=0; j<argc; j++ )); do
-	if [[ "${argv[j]}" == -o ]]; then
-		OUTPUT_FILE="${argv[j+1]}"
-		O_SET=1
-	fi
-    if [[ "${argv[j]}" == -c ]]; then
-		C_SET=1
-	fi
-done
+        for file in ${FILES[@]}; do
+    	    compile_and_inject_ir ${FLAGS[@]} -o $( echo "$file" | sed 's/\.c/\.o/' ) "$file"
+        done 
+    fi
+
+    # Case 4
+    # -c -o
+    # so wie jetzt
+    # ein .c in ein NAME.o
+    # IR in .o injecten 
+    if [[ O_SET -eq 1 && C_SET -eq 1 ]]; then
+            compile_and_inject_ir $@
+    fi
+}
+
+
 
 # takes three parameters
 # arguments for compiler call 1
@@ -90,95 +176,24 @@ function create_pex_from_folders {
     ## currently not possible, since we need to use sudo in fsoc lab
     chmod a+x $2
 }
-# parameters:
-# 1 - objectfile to check sections
+
+
 function contains_pex_section {
-    SECTIONS=$( readelf --section-headers $1 )
-    PEX_SECTION=$( echo $SECTIONS | grep '\.pex' )
+    # Determines whether an object file contains a .pex section.
+    # Parameters:
+    # 1 - name of the objectfile to check
+    # Return Value:
+    # 1 - if there is a .pex section
+    # 0 - otherwise
+    
+    SECTION_HEADERS=$( readelf --section-headers $1 )
+    PEX_SECTION=$( echo $SECTION_HEADERS | grep '\.pex' )
     if [[ -z PEX_SECTION ]]; then
         echo 0
     else
         echo 1
     fi
 }
-# Case 1:
-# kein -o kein -c
-# chechen ob .c oder .o dateien
-# IR für alle .c Files generieren und speichern
-# nicht alle flags mit emit llvm -S kompatibel
-# .c in .o kompilieren oder .o linken
-# a.out generieren (clang call)
-# alles in pex packen
-if [[ C_SET -eq 0 ]]; then
 
-    # check whether we have to compile from scratch or from object files
-    for arg in $@; do
-	    if [[ $arg =~ .*\.c ]]; then
-            LASTFILE=c
-	    elif [[ $arg =~ .*\.o ]]; then
-            LASTFILE=o
-        fi
-    done
-
-    TEMPDIR=$(mktemp -d)
-    log "tar archive gets built in $TEMPDIR"
-    if [[ -z $PEX_STORE_AS ]]; then
-        PEX_STORE_AS=$(clang -dumpmachine)
-    fi
-
-
-    if [[ $LASTFILE == c ]]; then
-        touch $TEMPDIR/LINKER_FLAGS
-        for file in ${FILES[@]}; do
-            mkdir -p $( dirname $TEMPDIR/IR/$file )
-            clang -emit-llvm -S ${FLAGS[@]} -o $TEMPDIR/IR/$file.ll $file 
-        done
-        for flag in ${FLAGS[@]}; do
-            echo -n "$flag " >> $TEMPDIR/LINKER_FLAGS
-        done
-
-        mkdir -p $( dirname $TEMPDIR/$PEX_STORE_AS/a.out )
-        clang ${FLAGS[@]} -o $TEMPDIR/$PEX_STORE_AS/a.out ${FILES[@]}
-
-        create_pex_from_folders $TEMPDIR "${OUTPUT_FILE:-a.out}"
-
-    # we compile from object files, just as the linker always did
-    elif [[ $LASTFILE == o ]]; then
-        for arg in "$@"; do
-            # find all .o files in input command that contain a .pex section
-            # we assume that these are the files that are not part of any flag
-            if [[ $arg =~ ^.*\.o$ && $( contains_pex_section $arg ) -eq 1 ]]; then
-                mkdir -p $( dirname $TEMPDIR/$PEX_STORE_AS/$arg )
-                mkdir -p $( dirname $TEMPDIR/IR/$arg )
-                objcopy --dump-section .pex="$TEMPDIR"/IR/"$arg".ll $arg
-                cp "$arg" "$TEMPDIR"/"$PEX_STORE_AS"/"$arg"
-            else
-                echo -n "$arg " >> $TEMPDIR/LINKER_FLAGS
-            fi
-        done
-        clang $@ -o "$TEMPDIR"/"$PEX_STORE_AS"/a.out
-        create_pex_from_folders $TEMPDIR "${OUTPUT_FILE:-a.out}"
-    fi
-fi
-
-# Case 3
-# nur -c
-# beliebig viele .c  
-# generiere .o für jedes .c
-# objcopy IR in jede .o
-# namen bleiben gleich
-if [[ O_SET -eq 0 && C_SET -eq 1 ]]; then
-
-    for file in ${FILES[@]}; do
-	    compile_and_inject_ir ${FLAGS[@]} -o $( echo "$file" | sed 's/\.c/\.o/' ) "$file"
-    done 
-fi
-
-# Case 4
-# -c -o
-# so wie jetzt
-# ein .c in ein NAME.o
-# IR in .o injecten 
-if [[ O_SET -eq 1 && C_SET -eq 1 ]]; then
-        compile_and_inject_ir $@
-fi
+# call main logic
+main $@

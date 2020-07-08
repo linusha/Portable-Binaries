@@ -11,5 +11,5 @@ cp -sf $DIR/pexmngr.sh $INSTDIR/pexmngr
 
 cp -sf $DIR/loader.sh /usr/share/pex_loader.sh
 
-echo "Successfully installed the PEX suite. Use it via pexcc, pexld, pexmngr."
+echo "Successfully set up the Dev-Env for PEX suite. Use it via pex and pexmngr."
 echo "Have fun :)"
