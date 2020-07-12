@@ -4,7 +4,7 @@
 # Not all clang flags are compatible with clang -emit-llvm -S
 # These will break pex
 
-set -e 
+set -e
 
 function main {
     

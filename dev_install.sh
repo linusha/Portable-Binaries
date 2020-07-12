@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# set to directorz you want the pex suite in
-# this script assumes that the location is part of your PATH
+# Set this to the directory you want the pex suite in.
+# This script assumes that the location is part of your PATH.
 PREFIX=${PREFIX:-/usr/bin}
-set -e
 DIR=$( dirname $( realpath $0 ) )
 
 cp -sf $DIR/pex.sh $PREFIX/pex
