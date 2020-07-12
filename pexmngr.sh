@@ -110,4 +110,6 @@ if [[ $OPERATION == "--rm" ]]; then
     exit 0
 fi
 
+rm -rf "$TEMPDIR"
+
 exit 1

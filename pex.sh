@@ -131,6 +131,8 @@ function handle_case_c_not_set {
     fi
 
     create_pex_from_folders "$TEMPDIR" "${OUTPUT_FILE:-a.out}"
+
+    rm -r "$TEMPDIR"
 }
 
 function handle_case_c_set_o_not_set {
@@ -176,9 +178,10 @@ function compile_and_inject_ir {
     	fi
     done
 
-    log "Generating IR and storing it in $TEMPFILE"
     local TEMPFILE
     TEMPFILE=$( mktemp )
+    log "Generating IR for "$OUTPUT_FILE" and storing it in "$TEMPFILE""
+
     # Overwrite original -o flag.
     # This compile step generates the IR.
     clang -emit-llvm -S "$@" -o "$TEMPFILE"
@@ -191,6 +194,8 @@ function compile_and_inject_ir {
     # Adds .pex Section in objectfile and store IR in it.
     objcopy --add-section .pex="$TEMPFILE" \
         --set-section-flags .pex=noload,readonly "$OUTPUT_FILE"
+
+    rm "$TEMPFILE"
 }
 
 function contains_pex_section {
@@ -234,6 +239,7 @@ function create_pex_from_folders {
     log "creating tar archive"
     local TARFILE
     TARFILE=$( mktemp )
+    log "Path to generated tar archive: "$TEMPFILE""
     tar -cf "$TARFILE" -C "$1" .
     
     # The script that will later be bundled with the tar archive.
@@ -246,6 +252,8 @@ function create_pex_from_folders {
     
     # Make loader script executable.
     chmod a+x "$2"
+
+    rm "$TARFILE"
 }
 
 function log {

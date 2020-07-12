@@ -22,6 +22,7 @@ function log {
 
 BASEDIR="$PWD"
 TEMPDIR=$( mktemp -d )
+log "Path to temp-folder: "$TEMPDIR""
 
 # Find the number of the line beginning with #__ARCHIVE__BELOW__ with grep.
 # Add one to account for newline.
@@ -80,6 +81,9 @@ fi
 # name of the original call to .pex
 log "executing binary for tag $ARCH"
 ( cd "$BASEDIR" && exec -a "$0" "$TEMPDIR"/"$BUNDLE_NAME"/a.out "$@" )
+
+log "deleting tmp files"
+rm -rf "$TEMPDIR"
 
 log "done"
 exit 0	
