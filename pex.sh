@@ -4,6 +4,8 @@
 # Not all clang flags are compatible with clang -emit-llvm -S
 # These will break pex
 
+set -e 
+
 function main {
     
     parse_flags_and_c_files "$@"
