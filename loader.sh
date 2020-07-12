@@ -15,6 +15,7 @@ function log {
     # 1 - string to log
     # Return Value:
     # none
+
 	if [[ -n "$PEX_VERBOSE" ]]; then
 		echo \[PEX\] "$1"
 	fi
@@ -59,7 +60,7 @@ if [[ ! -e "$BUNDLE_PATH"/a.out ]]; then
 	done
 
 	log "generating executable from object files"
-	clang "$( cat ../LINKER_FLAGS )" -o a.out ./**/*.o  
+	clang $( cat ../LINKER_FLAGS ) -o a.out ./**/*.o  
 
 	log "re-building tar archive"
 	cd ..

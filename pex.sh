@@ -1,6 +1,5 @@
 #!/bin/bash
 # TODO: "complete" this list
-# Not compatible with clang options that take a .c file as an argument
 # Not all clang flags are compatible with clang -emit-llvm -S
 # These will break pex
 
@@ -112,6 +111,7 @@ function handle_case_c_not_set {
         for flag in "${FLAGS[@]}"; do
             echo -n "$flag " >> "$TEMPDIR"/LINKER_FLAGS
         done
+        
 
         # Compile IR for each .c File to persist in .pex.
         for file in "${C_FILES[@]}"; do
