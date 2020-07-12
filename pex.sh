@@ -11,6 +11,12 @@ function main {
     parse_flags_and_c_files "$@"
     parse_c_and_o_flag "$@"
 
+    if [[ $E_SET -eq 1 ]]; then
+    # If -E is set only the preprocessor is run.
+        clang "$@"
+        exit 0
+    fi
+
     if [[ $C_SET -eq 0 ]]; then
         handle_case_c_not_set "$@"
 
@@ -43,8 +49,8 @@ function parse_flags_and_c_files {
 }
 
 function parse_c_and_o_flag {
-    # Check whether -c and -o are present in the arguments.
-    # C_SET, O_SET (and OUTPUT_FILE) are then available in the global scope.
+    # Check whether -c, -E and -o are present in the arguments.
+    # C_SET, O_SET, E_SET (and OUTPUT_FILE) are then available in the global scope.
     # Parameters:
     # all parameters of a clang call
     # Return Value: 
@@ -52,6 +58,7 @@ function parse_c_and_o_flag {
 
     O_SET=0
     C_SET=0
+    E_SET=0
 
     local argc=$#
     local argv=("$@")
@@ -62,6 +69,9 @@ function parse_c_and_o_flag {
     	fi
         if [[ "${argv[j]}" == -c ]]; then
     		C_SET=1
+    	fi
+        if [[ "${argv[j]}" == -E ]]; then
+    		E_SET=1
     	fi
     done
 }
