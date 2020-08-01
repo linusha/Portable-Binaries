@@ -1,14 +1,11 @@
 #!/bin/bash
-# TODO: "complete" this list
-# Not all clang flags are compatible with clang -emit-llvm -S
-# These will break pex
 
 set -e
 
 function main {
     
     parse_flags_and_c_files "$@"
-    parse_c_and_o_flag "$@"
+    determine_compile_actions "$@" # Sets E_SET, O_SET, C_SET.
 
     if [[ $E_SET -eq 1 ]]; then
     # If -E is set only the preprocessor is run.
@@ -47,7 +44,7 @@ function parse_flags_and_c_files {
     done
 }
 
-function parse_c_and_o_flag {
+function determine_compile_actions {
     # Check whether -c, -E and -o are present in the arguments.
     # C_SET, O_SET, E_SET (and OUTPUT_FILE) are then available in the global scope.
     # Parameters:
@@ -98,7 +95,7 @@ function handle_case_c_not_set {
 
     local TEMPDIR
     TEMPDIR=$( mktemp -d )
-    log "tar archive gets built in $TEMPDIR"
+    log "Tar archive gets built in $TEMPDIR"
 
     if [[ -z $PEX_STORE_AS ]]; then
         # Use target triple as default bundle name.
@@ -106,20 +103,19 @@ function handle_case_c_not_set {
     fi
 
     if [[ $LASTFILE == c ]]; then
-        # Persist linker flags in .pex to reuse them in recompilations.
+        # Persist linker flags to reuse them in recompilations.
         touch "$TEMPDIR"/LINKER_FLAGS
         for flag in "${FLAGS[@]}"; do
             echo -n "$flag " >> "$TEMPDIR"/LINKER_FLAGS
         done
-        
 
         # Compile IR for each .c File to persist in .pex.
         for file in "${C_FILES[@]}"; do
             mkdir -p "$( dirname "$TEMPDIR"/IR/"$file" )"
             clang -emit-llvm -S "${FLAGS[@]}" -o "$TEMPDIR"/IR/"$file".ll "$file" 
         done
-        
-        # Compile actual executable.
+
+        # Compile actual binary.
         mkdir -p "$( dirname "$TEMPDIR"/"$PEX_STORE_AS"/a.out )"
         clang "${FLAGS[@]}" -o "$TEMPDIR"/"$PEX_STORE_AS"/a.out "${C_FILES[@]}"
 
@@ -129,6 +125,7 @@ function handle_case_c_not_set {
             # We assume that these are the files that are not part of any flag.
             # Persist extracted IR and .o files in .pex.
             if [[ "$arg" =~ ^.*\.o$ && $( contains_pex_section "$arg" ) -eq 1 ]]; then
+                # Rebuild directory structure of input files.
                 mkdir -p "$( dirname "$TEMPDIR"/"$PEX_STORE_AS"/"$arg" )"
                 mkdir -p "$( dirname "$TEMPDIR"/IR/"$arg" )"
                 objcopy --dump-section .pex="$TEMPDIR"/IR/"$arg".ll "$arg"
@@ -138,19 +135,18 @@ function handle_case_c_not_set {
                 echo -n "$arg " >> "$TEMPDIR"/LINKER_FLAGS
             fi
         done
-        # Compile actual executable.
+        # Compile actual binary.
         clang "$@" -o "$TEMPDIR"/"$PEX_STORE_AS"/a.out
     fi
 
     create_pex_from_folders "$TEMPDIR" "${OUTPUT_FILE:-a.out}"
-
     rm -r "$TEMPDIR"
 }
 
 function handle_case_c_set_o_not_set {
     # If the -c flag is set and -o is not set
-    # then the input files are compiled into object files.
-    # This allows to compile multiple .c files at once.
+    # the input files are compiled into object files.
+    # This allows compiling multiple .c files at once.
     # The naming scheme is name.c -> name.o.
     # Parameters:
     # all parameters of a clang call
@@ -192,12 +188,12 @@ function compile_and_inject_ir {
 
     local TEMPFILE
     TEMPFILE=$( mktemp )
-    log "Generating IR for "$OUTPUT_FILE" and storing it in "$TEMPFILE""
+    log "Generating IR for $OUTPUT_FILE and storing it in $TEMPFILE"
 
     # Overwrite original -o flag.
     # This compile step generates the IR.
     clang -emit-llvm -S "$@" -o "$TEMPFILE"
-    make_compatible "$TEMPFILE"
+    assure_clang_version_compatibility "$TEMPFILE"
 
     log "Compiling"
     # This compile step generates the object file.
@@ -229,9 +225,10 @@ function contains_pex_section {
     fi
 }
 
-function make_compatible {
+function assure_clang_version_compatibility {
     # Remove line starting with "source_filename" in a file.
     # Needed for compatibility between different clang versions.
+    # This may not be exhaustive.
     # Parameters:
     # 1 - name of the file
     # Return Value: 
@@ -248,21 +245,22 @@ function create_pex_from_folders {
     # Return Value:
     # none
 
-    log "creating tar archive"
+    log "Creating tar archive"
     local TARFILE
     TARFILE=$( mktemp )
-    log "Path to generated tar archive: "$TEMPFILE""
+    log "Path to generated tar archive: $TEMPFILE"
     tar -cf "$TARFILE" -C "$1" .
     
     # The script that will later be bundled with the tar archive.
     local LOADER_SCRIPT
     LOADER_SCRIPT=$( cat /usr/share/pex_loader.sh )
     
-    log "merging loader script and tar archive to PEX File"
+    log "Merging loader script and tar archive to PEX File"
     echo "$LOADER_SCRIPT" > "$2"
     cat "$TARFILE" >> "$2"
     
     # Make loader script executable.
+    # TODO: Change permission as needed.
     chmod a+x "$2"
 
     rm "$TARFILE"
@@ -282,5 +280,4 @@ function log {
 	fi
 }
 
-# Call main logic.
 main "$@"
