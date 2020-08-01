@@ -74,6 +74,7 @@ if [[ ! -e "$BUNDLE_PATH"/a.out ]]; then
 	log "Substituting existing portable executable"
 	mv "$TEMPDIR"/new_program.pex "$0"
 	# TODO: Change permission as needed.
+	# Good solution would be to save and reapply initial permissions.
 	chmod a+x "$0"
 
 	log "Added binary for tag $BUNDLE_NAME to $0"

@@ -4,6 +4,8 @@
 # The loader script is always installed in /usr/share/
 # unless changed directly in this script.
 
+set -e
+
 # Set this to the directory you want the pex suite in.
 # This script assumes that the location is part of your PATH.
 PREFIX=${PREFIX:-/usr/bin}
