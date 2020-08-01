@@ -3,6 +3,13 @@
 # If the env var is not set, use architecture triple as default
 # set PEX_VERBOSE for pex logging
 
+if [[ -z $PEX_PROFILE ]]; then
+	PS4='+ $(date "+%s.%N")\011 '
+	exec 3>&2 2>/tmp/pexprofile.$$.log
+	echo "Logging times in /tmp/pexprofile.$$.log"
+	set -x
+fi
+
 set -e
 shopt -s globstar
 
@@ -85,6 +92,11 @@ log "executing binary for tag $ARCH"
 
 log "deleting tmp files"
 rm -rf "$TEMPDIR"
+
+if [[ -z $PEX_PROFILE ]]; then
+	set +x
+	exec 2>&3 3>&-
+fi
 
 log "done"
 exit 0	
