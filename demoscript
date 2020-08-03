@@ -2,8 +2,7 @@ ssh-add ~/.ssh/gitlab_rsa
 
 in sed Folder:
 make
-cp sed/*.o demo/
-cp lib/*.o demo/
+cp sed/*.o demo/ && cp lib/*.o demo/
 
 in demo folder:
 pex *.o -o sed_demo
