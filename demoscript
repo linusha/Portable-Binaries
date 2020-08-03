@@ -1,0 +1,21 @@
+ssh-add ~/.ssh/gitlab_rsa
+
+in sed Folder:
+make
+cp sed/*.o demo/
+cp lib/*.o demo/
+
+in demo folder:
+pex *.o -o sed_demo
+echo "pexisttoll" | ./sed_demo 's/pex/bs2/'
+echo "pexisttoll" | sed 's/pex/bs2/'
+# .pex ist in 24
+readelf regex.o --section-headers
+objcopy --only-section=.pex regex.o IR.demo
+head IR.demo
+
+scp sed_demo linus.hagemann@odroid-n2-01.fsoc.hpi.uni-potsdam.de:
+
+ls -lh
+echo "pexisttoll" | ./sed_demo 's/pex/bs2/'
+echo "pexisttoll" | sed 's/pex/bs2/'
