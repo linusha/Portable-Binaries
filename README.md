@@ -1,5 +1,7 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
+This project was part of the [Operating Systems II](https://osm.hpi.de/bs2/2020/) project seminar at HPI in the summer term of 2020. More information regarding the motivation and technical background of the project can be found in the  `report.pdf` file.
+
 # Description
 
 Portable executable files (PEX) are executables that can be moved between different ISA's and CPU feature sets. PEX files are built around the LLVM intermediate representation (IR). The PEX-Suite consists of the following programs:
