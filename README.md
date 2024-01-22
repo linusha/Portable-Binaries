@@ -2,6 +2,9 @@
 
 This project was part of the [Operating Systems II](https://osm.hpi.de/bs2/2020/) project seminar at HPI in the summer term of 2020. More information regarding the motivation and technical background of the project can be found in the  `report.pdf` file.
 
+The written report has also been published as
+> Hagemann, L., & Wollnik, T. Portable Executables. Operating Systems II–Student Projects, 35. https://publishup.uni-potsdam.de/frontdoor/index/index/docId/52636.
+
 # Description
 
 Portable executable files (PEX) are executables that can be moved between different ISA's and CPU feature sets. PEX files are built around the LLVM intermediate representation (IR). The PEX-Suite consists of the following programs:
